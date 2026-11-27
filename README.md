@@ -2,17 +2,37 @@
 
 Talos Linux overlays for Freescale/NXP single-board computers.
 
-No board is supported yet: `board` is a placeholder overlay that builds
-U-Boot from `board_defconfig` and copies `u-boot.bin` to `/boot/EFI`.
+| Overlay Name  | Board                                    |
+| ------------- | ---------------------------------------- |
+| outsight-alb2 | Outsight ALB2 (iWave iWG27M i.MX8QM SoM) |
+
+## Layout
+
+Each board has its own:
+
+* installer in `installers/<board>/`, listed in `installers/pkg.yaml` and `go.work`;
+* profile in `profiles/<board>/`, listed in `profiles/pkg.yaml`;
+* build artifacts in `artifacts/<board>/<component>/`, as a `<component>-<board>`
+  stage listed in `installers/pkg.yaml`.
+
+Artifacts shared by several boards of the same SoC go in
+`artifacts/<component>/<soc>/`.
+
+## Boards
+
+### outsight-alb2
+
+The overlay installs only the device tree. The bootloader is signed for AHAB,
+lives in the eMMC boot partitions and is updated outside of Talos. Talos
+partitions start at 16 MiB to keep the U-Boot environment.
+
+The ALB2 device tree is not in Linux: `artifacts/outsight-alb2/dtb` builds it
+against the SoC `.dtsi` files of the Linux version set in `Pkgfile`.
 
 ## Adding a board
 
-* Rename `board` to the overlay name in `installers/`, `profiles/`,
-  `artifacts/u-boot/pkg.yaml`, `installers/pkg.yaml`, `profiles/pkg.yaml`
-  and `go.work`.
-* Set the U-Boot defconfig and boot firmware in `artifacts/u-boot/pkg.yaml`.
-* Implement the install logic in `installers/<board>/src/main.go`.
-* Add the board to `MAINTAINERS.md`.
+* Add the installer, profile and artifacts as described in [Layout](#layout).
+* Add the board to the table above and to `MAINTAINERS.md`.
 
 ## Building
 

@@ -1,3 +1,5 @@
 go 1.26.5
 
-use ./installers/board/src
+use (
+	./installers/outsight-alb2/src
+)

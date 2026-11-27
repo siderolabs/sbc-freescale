@@ -1,0 +1,159 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+/*
+ * Outsight ALB2 (Augmented LiDAR Box v2) on iWave iWG27M i.MX8QM SoM
+ *
+ * Copyright (c) 2026 Outsight
+ */
+
+/dts-v1/;
+
+#include "imx8qm-iwg27m.dtsi"
+
+/ {
+	model = "Outsight ALB2";
+	compatible = "outsight,imx8qm-alb2", "iwave,imx8qm-iwg27m", "fsl,imx8qm";
+
+	/*
+	 * Lidar power on/off only. The 12V/24V select (LIDAR_24V_EN) is left
+	 * unclaimed so hwtools can drive it through the GPIO chardev.
+	 */
+	reg_lidar: regulator-lidar {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_lidar>;
+		regulator-name = "LIDAR";
+		gpio = <&lsio_gpio1 27 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		startup-delay-us = <100000>;
+	};
+
+	reg_gps: regulator-gps {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_gps>;
+		regulator-name = "GPS";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&lsio_gpio1 30 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	/*
+	 * hwtools drives these through the state attribute of
+	 * /sys/bus/platform/devices/userspace-consumer-<name>: keep node names.
+	 */
+	userspace-consumer-gps {
+		compatible = "regulator-output";
+		vout-supply = <&reg_gps>;
+	};
+
+	userspace-consumer-lidar {
+		compatible = "regulator-output";
+		vout-supply = <&reg_lidar>;
+	};
+};
+
+&i2c1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lpi2c1>;
+	clock-frequency = <100000>;
+	status = "okay";
+
+	pca9536: gpio@41 {
+		compatible = "nxp,pca9536";
+		reg = <0x41>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		gpio-line-names = "PPS_EN", "PPS_SEL", "", "";
+
+		pps-en-hog {
+			gpio-hog;
+			gpios = <0 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "PPS_EN";
+		};
+	};
+
+	tmp102: temperature-sensor@49 {
+		compatible = "ti,tmp102";
+		reg = <0x49>;
+	};
+
+	/* LED names (pca963x:<label>) are used by hwtools. */
+	pca9632: led-controller@62 {
+		compatible = "nxp,pca9632";
+		reg = <0x62>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		led@0 {
+			reg = <0>;
+			label = "red";
+			linux,default-trigger = "none";
+		};
+
+		led@1 {
+			reg = <1>;
+			label = "blue";
+			linux,default-trigger = "none";
+		};
+
+		led@2 {
+			reg = <2>;
+			label = "green";
+			linux,default-trigger = "none";
+			default-state = "on";
+		};
+
+		led@3 {
+			reg = <3>;
+			label = "unused";
+			linux,default-trigger = "none";
+		};
+	};
+};
+
+&lpuart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lpuart3>;
+	status = "okay";
+};
+
+&iomuxc {
+	pinctrl_lpi2c1: lpi2c1grp {
+		fsl,pins = <
+			IMX8QM_GPT0_CLK_DMA_I2C1_SCL				0xc600004c
+			IMX8QM_GPT0_CAPTURE_DMA_I2C1_SDA			0xc600004c
+		>;
+	};
+
+	pinctrl_lpuart3: lpuart3grp {
+		fsl,pins = <
+			IMX8QM_M41_GPIO0_00_DMA_UART3_RX			0x06000020
+			IMX8QM_M41_GPIO0_01_DMA_UART3_TX			0x06000020
+		>;
+	};
+
+	pinctrl_reg_gps: reggpsgrp {
+		fsl,pins = <
+			IMX8QM_MIPI_CSI1_GPIO0_00_LSIO_GPIO1_IO30		0x00000021
+		>;
+	};
+
+	pinctrl_reg_lidar: reglidargrp {
+		fsl,pins = <
+			IMX8QM_MIPI_CSI0_GPIO0_00_LSIO_GPIO1_IO27		0x00000021
+			/* SMARC GPIO7: the vendor tree muxed SIM0_CLK (GPIO6) here */
+			IMX8QM_SIM0_RST_LSIO_GPIO0_IO01				0x00000021
+		>;
+	};
+};
+
+&lsio_gpio0 {
+	gpio-line-names = "", "LIDAR_24V_EN", "", "", "", "", "", "",
+			  "", "", "", "", "", "", "", "",
+			  "", "", "", "", "", "", "", "",
+			  "", "", "", "", "", "", "", "";
+};

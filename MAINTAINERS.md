@@ -9,3 +9,4 @@ This document contains a list of maintainers in this repo. For now, you become a
 
 | Overlay Name | Board | PR | Maintainer | GitHub ID |
 | ------------ | ----- | -- | ---------- | --------- |
+| outsight-alb2 | Outsight ALB2 (iWave iWG27M i.MX8QM SoM) | | Clément Péron | [clementperon](https://github.com/clementperon) |
