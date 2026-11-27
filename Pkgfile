@@ -3,10 +3,12 @@
 format: v1alpha2
 
 vars:
-  # renovate: datasource=github-tags extractVersion=^v(?<version>.*)$ depName=u-boot/u-boot
-  uboot_version: 2026.10
-  uboot_sha256: f943a88389c8fd70a6b0d061a88267465e143c7ca6ea2b75837ab20f5b60c739
-  uboot_sha512: e38fee5568f14332c37a7ca03d3e69367bcc342ec09421a2b6d971a98d62b7ec522602ecd5df4c9ffb5d900672861259a6c6902294d7fd89f45afc268dc68e10
+  # Keep in sync with the kernel in siderolabs/pkgs: the board DTBs are built
+  # against this version's SoC .dtsi files.
+  # renovate: datasource=git-tags extractVersion=^v(?<version>.*)$ depName=git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+  linux_version: 7.3.6
+  linux_sha256: 8183d475a76a0faffa92d6cd500af421f589dfd0300a0f1060bb875e11d45723
+  linux_sha512: 2fe38d23748aaf916a15e57b1e3ac44191d70a1cd006dc1a1fc2e2ae4827275bc36cecf2a3d45e11cc979da85ab33cbfbc8d1270da3738929fa8032527a410ff
 
 labels:
   org.opencontainers.image.source: https://github.com/siderolabs/sbc-freescale

@@ -1,0 +1,39 @@
+# The ALB2 device tree is not in Linux: build it against the SoC .dtsi files of
+# the kernel version Talos ships.
+name: dtb-outsight-alb2
+variant: scratch
+shell: /bin/bash
+dependencies:
+  - stage: base
+steps:
+  - sources:
+      - url: https://cdn.kernel.org/pub/linux/kernel/v{{ regexReplaceAll "(\\d+)(.\\d+)(\\.\\d+)?$" .linux_version "${1}" }}.x/linux-{{ .linux_version }}.tar.xz
+        destination: linux.tar.xz
+        sha256: "{{ .linux_sha256 }}"
+        sha512: "{{ .linux_sha512 }}"
+    prepare:
+      - |
+        tar xf linux.tar.xz --strip-components=1 --wildcards \
+          'linux-*/arch/arm64/boot/dts/freescale/*.dtsi' \
+          'linux-*/include/dt-bindings' \
+          'linux-*/include/uapi'
+        cp /pkg/src/freescale/* arch/arm64/boot/dts/freescale/
+    build:
+      - |
+        for dts in /pkg/src/freescale/*.dts; do
+          name=$(basename "${dts}" .dts)
+          cpp -nostdinc -undef -D__DTS__ -x assembler-with-cpp \
+            -I arch/arm64/boot/dts/freescale -I include \
+            -o "${name}.pp.dts" "arch/arm64/boot/dts/freescale/${name}.dts"
+          # The kernel's default dtbs build disables these two checks as well.
+          dtc -I dts -O dtb \
+            -Wno-unique_unit_address -Wno-avoid_unnecessary_addr_size \
+            -o "${name}.dtb" "${name}.pp.dts"
+        done
+    install:
+      - |
+        mkdir -p /rootfs/artifacts/arm64/dtb/freescale
+        cp -v *.dtb /rootfs/artifacts/arm64/dtb/freescale/
+finalize:
+  - from: /rootfs
+    to: /rootfs

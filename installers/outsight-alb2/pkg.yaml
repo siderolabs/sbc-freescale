@@ -1,4 +1,4 @@
-name: board
+name: outsight-alb2
 variant: scratch
 shell: /bin/bash
 dependencies:
@@ -22,12 +22,12 @@ steps:
     build:
       - |
         cd /pkg/src
-        CGO_ENABLED=0 go build -o ./board .
+        CGO_ENABLED=0 go build -o ./outsight-alb2 .
     install:
       - |
         mkdir -p /rootfs/installers/
 
-        cp -p /pkg/src/board /rootfs/installers/board
+        cp -p /pkg/src/outsight-alb2 /rootfs/installers/outsight-alb2
 finalize:
   - from: /rootfs
     to: /rootfs

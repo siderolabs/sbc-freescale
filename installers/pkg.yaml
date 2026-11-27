@@ -1,9 +1,8 @@
 name: sbc-freescale
 variant: scratch
 dependencies:
-  - stage: board
-  - stage: u-boot
-    platform: linux/arm64
+  - stage: outsight-alb2
+  - stage: dtb-outsight-alb2
   - stage: profiles
 finalize:
   - from: /rootfs
